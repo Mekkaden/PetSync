@@ -2,6 +2,53 @@ const express = require('express');
 const router = express.Router();
 const Pet = require('../models/Pet');
 const { protect } = require('../middleware/authMiddleware');
+const http = require('http');
+
+/**
+ * Sends pet profile data to Rocky's AI chatbot server (port 5000) for ingestion into Supabase.
+ * This is fire-and-forget — we don't block the response waiting for it.
+ * If the chatbot server is down, we just log a warning and move on.
+ */
+function ingestToAI(pet) {
+  try {
+    const payload = JSON.stringify({
+      petId: pet._id.toString(),
+      name: pet.name || '',
+      breed: pet.breed || '',
+      age: pet.age ? pet.age.toString() : '',
+      weight: '',
+      allergies: Array.isArray(pet.allergies) ? pet.allergies.join(', ') : (pet.allergies || 'None'),
+      medicalHistory: Array.isArray(pet.conditions) ? pet.conditions.join(', ') : (pet.conditions || 'None'),
+      food: 'Standard pet food',
+      feedingSchedule: 'Twice daily',
+      hygiene: 'Regular grooming',
+    });
+
+    const options = {
+      hostname: 'localhost',
+      port: 5001,
+      path: '/api/ingest',
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Content-Length': Buffer.byteLength(payload),
+      },
+    };
+
+    const req = http.request(options, (res) => {
+      console.log('[AI Ingest] Status:', res.statusCode, 'for pet:', pet.name);
+    });
+
+    req.on('error', (err) => {
+      console.warn('[AI Ingest] Chatbot server unreachable. Is it running on port 5000?', err.message);
+    });
+
+    req.write(payload);
+    req.end();
+  } catch (err) {
+    console.warn('[AI Ingest] Failed to send pet data to AI server:', err.message);
+  }
+}
 
 const multer = require('multer');
 const path = require('path');
@@ -42,6 +89,9 @@ router.post('/', protect, upload.single('image'), async (req, res) => {
       allergies: allergies ? (typeof allergies === 'string' ? allergies.split(',').map(a => a.trim()) : allergies) : [],
       imageUrl,
     });
+
+    // Fire-and-forget: sync pet to Rocky's AI chatbot (Supabase vector store)
+    ingestToAI(pet);
 
     res.status(201).json(pet);
   } catch (error) {
@@ -87,6 +137,9 @@ router.put('/:id', protect, upload.single('image'), async (req, res) => {
     const updatedPet = await Pet.findByIdAndUpdate(req.params.id, updateData, {
       returnDocument: 'after',
     });
+
+    // Fire-and-forget: sync updated pet to Rocky's AI chatbot (Supabase vector store)
+    ingestToAI(updatedPet);
 
     res.json(updatedPet);
   } catch (error) {

@@ -2,8 +2,8 @@ const mongoose = require('mongoose');
 
 const PetSchema = new mongoose.Schema({
   owner: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
+    type: mongoose.Schema.Types.ObjectId, //a string that the mongo develops automatically for the owner
+    ref: 'User', //a string that tells the database that this is a reference to the User model
     required: true,
   },
   name: {
@@ -19,8 +19,9 @@ const PetSchema = new mongoose.Schema({
     required: true,
   },
   allergies: {
-    type: [String],
-    default: [], // e.g., ["chicken", "beef"]
+    type: [String], //an array of string only allowed here
+    default: [],//Put an empty array if user does nothing
+    // e.g., ["chicken", "beef"] 
   },
   imageUrl: {
     type: String,
@@ -31,6 +32,6 @@ const PetSchema = new mongoose.Schema({
     type: [String],
     default: [], // e.g., ["ear_mites", "leg_strain"]
   }
-}, { timestamps: true });
+}, { timestamps: true }); //timestamps , createdat and updated at automatically set by mongo
 
 module.exports = mongoose.model('Pet', PetSchema);
