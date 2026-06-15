@@ -1,2 +1,4 @@
 Postman for macOS (arm64).zip
 *.zip
+.env
+.env.*
