@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const Product = require('../models/Product'); //walk out of the routes folder and go to backend then fo to models then grab product.js
+const Product = require('../models/Product');
 const Pet = require('../models/Pet');
 const { protect } = require('../middleware/authMiddleware');
 
@@ -87,7 +87,20 @@ router.post('/recommend', protect, async (req, res) => {
 
 // @route   POST /api/store/seed
 // @desc    Seed mock products for testing
+// @access  DEVELOPMENT ONLY - protected by SEED_SECRET header
 router.post('/seed', async (req, res) => {
+  // --- SECURITY GUARD ---
+  // Only allow this in development mode
+  if (process.env.NODE_ENV === 'production') {
+    return res.status(403).json({ message: 'Seeding is disabled in production.' });
+  }
+  // Require a secret header to prevent accidental or malicious triggering
+  const seedSecret = process.env.SEED_SECRET;
+  if (!seedSecret || req.headers['x-seed-secret'] !== seedSecret) {
+    return res.status(401).json({ message: 'Unauthorized: Invalid or missing seed secret.' });
+  }
+  // --- END GUARD ---
+
   try {
     await Product.deleteMany(); // clear existing
     const mockProducts = [

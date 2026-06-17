@@ -1,4 +1,30 @@
+# Zip & Postman files
 Postman for macOS (arm64).zip
 *.zip
+
+# Environment variables - NEVER commit
 .env
 .env.*
+.env.local
+.env.production
+
+# Dependencies - never commit these
+node_modules/
+**/node_modules/
+
+# Uploaded files
+public/uploads/
+**/public/uploads/
+
+# OS files
+.DS_Store
+**/.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+
+# Expo
+.expo/
+dist/

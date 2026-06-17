@@ -155,6 +155,7 @@ app.post('/api/ingest', handleIngestRequest);
 app.use(globalErrorHandler);
 
 // Start server
+// Start server
 app.listen(port, function() {
   console.log('Express server listening on port ' + port);
 });

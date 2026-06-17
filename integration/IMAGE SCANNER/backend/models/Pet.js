@@ -27,36 +27,6 @@ const PetSchema = new mongoose.Schema({
     type: String,
     default: "", // Default empty string means we'll show a fallback on the frontend
   },
-  // Step 1 extra
-  weight: {
-    type: String,
-    default: '', // e.g., "12 kg"
-  },
-
-  // Step 2 — Medical Baseline
-  pastSurgeries: {
-    type: String,
-    default: '', // e.g., "Spayed at 1 year"
-  },
-  lastVetCheckup: {
-    type: String,
-    default: '', // e.g., "January 2025"
-  },
-
-  // Step 3 — Daily Routine
-  currentFood: {
-    type: String,
-    default: '', // e.g., "Pedigree Adult"
-  },
-  feedingSchedule: {
-    type: String,
-    default: '', // e.g., "Twice a day, 8 AM and 6 PM"
-  },
-  hygiene: {
-    type: String,
-    default: '', // e.g., "Weekly baths, walks 2 miles a day"
-  },
-
   // We can optionally store diagnosed conditions here later
   conditions: {
     type: [String],

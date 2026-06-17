@@ -5,39 +5,28 @@ const { protect } = require('../middleware/authMiddleware');
 const http = require('http');
 
 /**
- * Sends pet profile data to Rocky's AI chatbot server (port 5000) for ingestion into Supabase.
+ * Sends pet profile data to the AI chatbot server (port 5001) for ingestion into Supabase.
  * This is fire-and-forget — we don't block the response waiting for it.
  * If the chatbot server is down, we just log a warning and move on.
  */
 function ingestToAI(pet) {
   try {
-    // Build combined medical history from diagnosed conditions + past surgeries
-    const conditionsStr = Array.isArray(pet.conditions) && pet.conditions.length > 0
-      ? pet.conditions.join(', ')
-      : '';
-    const surgeriesStr = pet.pastSurgeries || '';
-    const lastCheckup = pet.lastVetCheckup ? `. Last vet checkup: ${pet.lastVetCheckup}` : '';
-    const medicalParts = [conditionsStr, surgeriesStr].filter(Boolean);
-    const medicalHistory = medicalParts.length > 0
-      ? medicalParts.join('; ') + lastCheckup
-      : ('None' + lastCheckup);
-
     const payload = JSON.stringify({
       petId: pet._id.toString(),
       name: pet.name || '',
       breed: pet.breed || '',
       age: pet.age ? pet.age.toString() : '',
-      weight: pet.weight || 'Unknown',
+      weight: '',
       allergies: Array.isArray(pet.allergies) ? pet.allergies.join(', ') : (pet.allergies || 'None'),
-      medicalHistory,
-      food: pet.currentFood || 'Standard pet food',
-      feedingSchedule: pet.feedingSchedule || 'Twice daily',
-      hygiene: pet.hygiene || 'Regular grooming',
+      medicalHistory: Array.isArray(pet.conditions) ? pet.conditions.join(', ') : (pet.conditions || 'None'),
+      food: 'Standard pet food',
+      feedingSchedule: 'Twice daily',
+      hygiene: 'Regular grooming',
     });
 
     const options = {
       hostname: 'localhost',
-      port: process.env.CHATBOT_PORT || 5002,
+      port: 5001,
       path: '/api/ingest',
       method: 'POST',
       headers: {
@@ -51,7 +40,7 @@ function ingestToAI(pet) {
     });
 
     req.on('error', (err) => {
-      console.warn('[AI Ingest] Chatbot server unreachable. Is it running on port 5000?', err.message);
+      console.warn('[AI Ingest] Chatbot server unreachable. Is it running on port 5001?', err.message);
     });
 
     req.write(payload);

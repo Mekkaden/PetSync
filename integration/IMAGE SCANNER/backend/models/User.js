@@ -24,7 +24,7 @@ UserSchema.pre('save', async function (next) {
   this.password = await bcrypt.hash(this.password, salt); //hashes the password
 });
 
-// custom function u attached to the user object to compare passwords
+// Method to compare passwords
 UserSchema.methods.matchPassword = async function (enteredPassword) {
   //The matchPassword method is defined directly on the UserSchema. This means every User document has this capability built-in.
   return await bcrypt.compare(enteredPassword, this.password);
